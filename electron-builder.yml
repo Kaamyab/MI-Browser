@@ -1,6 +1,6 @@
 appId: com.browser.mi
 productName: MI Browser
-copyright: Copyright © 2018 Yoshihide Shiono
+copyright: Copyright © 2018 Kaamy
 directories:
   output: dist
   buildResources: resources

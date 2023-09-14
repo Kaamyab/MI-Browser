@@ -1,38 +1,35 @@
-<p align="center"><img src="https://i.imgur.com/a9QWW0v.png"></p>
+<p align="center"><img src="https://i.imgur.com/kh2RuEI.png"></p>
 
 ## Usage
-
-### Create an App
-
-```
-# with npx
-$ npx create-nextron-app my-app --example with-tailwindcss
-
-# with yarn
-$ yarn create nextron-app my-app --example with-tailwindcss
-
-# with pnpx
-$ pnpx create-nextron-app my-app --example with-tailwindcss
-```
 
 ### Install Dependencies
 
 ```
-$ cd my-app
+$ cd mi-browser
 
-# using yarn or npm
-$ yarn (or `npm install`)
-
-# using pnpm
-$ pnpm install --shamefully-hoist
+# using yarn
+$ yarn
 ```
 
 ### Use it
 
 ```
 # development mode
-$ yarn dev (or `npm run dev` or `pnpm run dev`)
+$ yarn dev
 
-# production build
-$ yarn build (or `npm run build` or `pnpm run build`)
+## production build
+
+# All Platforms
+$ yarn build:all
+
+# Windows
+$ yarn build:win32
+or
+$ yarn build:win64
+
+# Mac
+$ yarn build:mac
+
+# Linux
+$ yarn build:linux
 ```
