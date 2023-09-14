@@ -1,24 +1,20 @@
 // Modules
-import React, {
-  MouseEventHandler,
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+
+// Components
+import CtxMenuItem from "./low-level/CtxMenuItem";
+
+// Icons
+import { ArrowCounterClockwise } from "@phosphor-icons/react";
+import { ArrowLeft2, Code } from "iconsax-react";
 
 // Redux
-import { useAppSelector } from "../redux/hooks";
-import { m, motion } from "framer-motion";
-import { ContextMenuEvent } from "electron";
-import { ArrowLeft2, ArrowLeft3, Code } from "iconsax-react";
-import CtxMenuItem from "./low-level/CtxMenuItem";
-import { ArrowCounterClockwise } from "@phosphor-icons/react";
-import { ValueType } from "../redux/features/Tabs";
+import { ValueType, modifyTab } from "../redux/features/Tabs";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 
 const WebView = ({ tab }: { tab: ValueType }) => {
+  const ReduxDispatch = useAppDispatch();
   const url = "https://google.com";
   const webView = useRef<Electron.WebviewTag>(null);
 
@@ -41,19 +37,74 @@ const WebView = ({ tab }: { tab: ValueType }) => {
     }
   };
 
-  const onURLLoad = useMemo(() => {
-    webView?.current?.loadURL(tab.url);
-    console.log("url loaded");
-  }, [tab.url]);
+  const onStartLoading = (e: Electron.Event) => {
+    console.log("loading..");
+    console.log(e);
+    ReduxDispatch(
+      modifyTab({
+        id: tab.id,
+        status: "Loading",
+      })
+    );
+  };
+  const onStopLoading = (e: Electron.Event) => {
+    console.log("stopped Loading");
+    console.log(e);
+    ReduxDispatch(
+      modifyTab({
+        id: tab.id,
+        status: "Loaded",
+      })
+    );
+  };
+  const onTitleUpdate = (e: Electron.PageTitleUpdatedEvent) => {
+    console.log(e.title);
+    ReduxDispatch(
+      modifyTab({
+        id: tab.id,
+        title: e.title,
+      })
+    );
+  };
 
-  console.log("Re-Rendered");
+  let ThisTab = useAppSelector((state) => state.Tabs.value).find(
+    (item) => item.id == tab.id
+  );
+  const onURLChange = useCallback((url: string) => {
+    console.warn("NEW URL =>", url);
+    if (url !== "" && ThisTab.url != url && url !== "about:blank") {
+      ReduxDispatch(
+        modifyTab({
+          id: tab.id,
+          currentURL: url,
+        })
+      );
+    }
+  }, []);
+
+  console.log("WebView Re-Rendered");
+
+  useEffect(() => {
+    onURLChange(webView?.current?.src);
+  }, [webView?.current?.src]);
 
   useEffect(() => {
     webView?.current?.addEventListener("did-finish-load", onFinishLoad);
     webView?.current?.addEventListener("context-menu", onContextMenu);
-    console.log("component re-rendered");
+    webView?.current.addEventListener("did-start-loading", onStartLoading);
+    webView?.current.addEventListener("did-stop-loading", onStopLoading);
+    webView?.current?.addEventListener("page-title-updated", onTitleUpdate);
     return () => {
       webView?.current?.removeEventListener("context-menu", onContextMenu);
+      webView?.current?.removeEventListener(
+        "did-start-loading",
+        onStartLoading
+      );
+      webView?.current?.removeEventListener("did-stop-loading", onStopLoading);
+      webView?.current?.removeEventListener(
+        "page-title-updated",
+        onTitleUpdate
+      );
     };
   }, []);
 
@@ -62,10 +113,7 @@ const WebView = ({ tab }: { tab: ValueType }) => {
       <webview
         key={tab.id}
         ref={webView}
-        plugins
-        nodeintegration
         webpreferences="allowRunningInsecureContent"
-        allowpopups={true}
         src={tab.url}
         className={`w-auto h-auto min-h-[calc(100vh-8rem)] rounded-lg overflow-hidden select-all
         ${tab.isActive ? "" : "hidden"}

@@ -4,17 +4,21 @@ import { v4 as uuidv4 } from "uuid";
 export type ValueType = {
   id: string;
   url: string;
+  currentURL: string | null;
   title: string;
   isActive: boolean;
+  status?: "Loading" | "Loaded" | "Failed" | null;
 };
 
 const initialState = {
   value: [
     {
       id: uuidv4(),
-      url: "https://google.com",
-      title: "Google",
+      url: null,
+      currentURL: null,
+      title: "New Tab",
       isActive: true,
+      status: null,
     },
   ],
 } as { value: ValueType[] };
@@ -73,6 +77,32 @@ export const Tabs = createSlice({
       const newArray = tab ? [tab] : [];
       state.value.splice(0, state.value.length, ...newArray);
     },
+    modifyTab: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        url?: string | null;
+        currentURL?: string | null;
+        title?: string;
+        isActive?: boolean;
+        status?: "Loading" | "Loaded" | "Failed" | null;
+      }>
+    ) => {
+      const { id, url, title, isActive, status, currentURL } = action.payload;
+      const targetObject = state.value.find((item) => item.id === id);
+      const propertiesToUpdate = {
+        url,
+        title,
+        isActive,
+        status,
+        currentURL,
+      };
+      for (const [property, value] of Object.entries(propertiesToUpdate)) {
+        if (value !== undefined && property in targetObject) {
+          targetObject[property] = value;
+        }
+      }
+    },
   },
 });
 
@@ -84,5 +114,6 @@ export const {
   closeLeftTabs,
   closeAllTabs,
   closeOtherTabs,
+  modifyTab,
 } = Tabs.actions;
 export default Tabs.reducer;

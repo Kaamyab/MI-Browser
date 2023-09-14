@@ -1,21 +1,24 @@
-import electron from "electron";
-import TitleBarButton from "../low-level/TitleBarButton";
-import {
-  ArrowLeft,
-  ArrowLeft2,
-  ArrowRight,
-  ArrowRight2,
-  Lock,
-  PictureFrame,
-  Refresh,
-  Size,
-} from "iconsax-react";
-import { useState } from "react";
+// Modules
+import { useEffect, useState } from "react";
 
-const ipcRenderer = electron.ipcRenderer;
+// Components
+import TitleBarButton from "../low-level/TitleBarButton";
+
+// Icons
+import { ArrowLeft, ArrowRight, Lock, Refresh } from "iconsax-react";
+
+// Redux
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 
 const TitleBar = ({ url, setUrl, children }) => {
-  const [inputUrl, setInputUrl] = useState("");
+  let state = useAppSelector((state) => state.Tabs.value);
+  let currentURL: string | "" =
+    state.find((item) => item.isActive === true)?.currentURL || "";
+  const [inputUrl, setInputUrl] = useState<string>(currentURL);
+
+  useEffect(() => {
+    setInputUrl(currentURL || "");
+  }, [currentURL]);
 
   const TitlebarIcon = [
     {
@@ -50,7 +53,7 @@ const TitleBar = ({ url, setUrl, children }) => {
             height="8"
             fill="none"
             stroke="#fff"
-            stroke-width="1.5"
+            strokeWidth="1.5"
           />
           <rect x="6" y="6" width="4" height="4" fill="none" />
         </svg>
@@ -88,7 +91,7 @@ const TitleBar = ({ url, setUrl, children }) => {
         ["--webkit-app-region" as string]: "drag",
         ["app-region" as string]: "drag",
       }}
-      className="w-full h-auto bg-transparent backdrop-blur-lg flex flex-col fixed top-0 z-50 bg-zinc-900 rounded-lg"
+      className="w-full h-auto backdrop-blur-lg flex flex-col fixed top-0 z-50 bg-[#101116] rounded-lg"
     >
       <div className="w-full h-12 flex justify-between items-center">
         <div className="shrink-0">
@@ -115,12 +118,14 @@ const TitleBar = ({ url, setUrl, children }) => {
           <Lock size="1rem" variant="Bold" className="text-white/50 shrink-0" />
           <input
             type="text"
-            defaultValue={url}
+            defaultValue={currentURL || ""}
             onChange={(e) => {
               setInputUrl(e.target.value);
             }}
+            value={currentURL || ""}
             onKeyDown={(e) => e.key === "Enter" && onUrlHandle(e)}
             autoCorrect=""
+            placeholder="Search Google or type a URL"
             className="bg-transparent outline-none h-full w-full px-4 text-center text-sm"
           />
           <Refresh

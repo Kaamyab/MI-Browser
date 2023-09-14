@@ -9,11 +9,13 @@ import {
   AlignLeftSimple,
   AlignRightSimple,
   ArrowCounterClockwise,
+  CircleNotch,
+  Warning,
   X,
 } from "@phosphor-icons/react";
 
 // Redux
-import { useAppDispatch } from "../../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
   closeAllTabs,
   closeLeftTabs,
@@ -26,7 +28,15 @@ import {
 import CtxMenuItem from "./CtxMenuItem";
 import { ArrowLeft2 } from "iconsax-react";
 
-const WebTab = ({ details, key }: { details: ValueType; key: string }) => {
+const WebTab = ({ details }: { details: ValueType }) => {
+  let state = useAppSelector((state) => state.Tabs.value);
+  let status =
+    useAppSelector((state) => state.Tabs.value).find(
+      (item) => item.id == details.id
+    )?.status || undefined;
+  useEffect(() => {
+    console.log("Tab => ", status);
+  }, [state]);
   const ReduxDispatch = useAppDispatch();
   const tab = useRef<HTMLDivElement>(null);
   const [ctxMenu, setCtxMenu] = useState<{
@@ -48,7 +58,6 @@ const WebTab = ({ details, key }: { details: ValueType; key: string }) => {
   }, []);
   return (
     <motion.div
-      key={key}
       ref={tab}
       onContextMenu={(e) => onCTXMenu}
       initial={{ x: -25, opacity: 0, width: "0%" }}
@@ -93,7 +102,7 @@ const WebTab = ({ details, key }: { details: ValueType; key: string }) => {
               top: ctxMenu.y,
               transitionProperty: "left, top",
             }}
-            className="absolute w-64 h-auto backdrop-blur-lg rounded-xl z-50  
+            className="absolute w-64 h-auto backdrop-blur-lg rounded-xl z-[99999]  
             ring-1 ring-zinc-700/30 ring-inset shadow-lg bg-zinc-900/90 duration-300
             flex flex-col gap-2 p-4
             "
@@ -163,9 +172,15 @@ const WebTab = ({ details, key }: { details: ValueType; key: string }) => {
         }
     `}
       >
-        <Airplay size={"1.25rem"} />
+        {status == "Loading" ? (
+          <CircleNotch size={"1.25rem"} className="animate-spin" />
+        ) : status == "Failed" ? (
+          <Warning size={"1.25rem"} />
+        ) : (
+          <Airplay size={"1.25rem"} />
+        )}
         <span className="relative flex justify-start items-center overflow-hidden w-full">
-          Google
+          {details.title}
           <span className="absolute h-full min-w-0 w-16 right-0 top-0 bottom-0 bg-gradient-to-r from-transparent to-zinc-800" />
         </span>
         <span

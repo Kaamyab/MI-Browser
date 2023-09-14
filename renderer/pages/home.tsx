@@ -1,7 +1,8 @@
 // Modules
-import React, { useEffect, useRef, useState } from "react";
+import React, { FormEvent, useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
+import electron from "electron";
 
 // Components
 import TitleBar from "../components/high-level/TitleBar";
@@ -12,12 +13,35 @@ import AddTabButton from "../components/low-level/AddTabButton";
 // Redux
 import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import { addTab } from "../redux/features/Tabs";
+import { GoogleLogo, MagnifyingGlass } from "@phosphor-icons/react";
+import NewTab from "../components/low-level/NewTab";
+
+// IPC
+const ipcRenderer = electron.ipcRenderer;
 
 function Home() {
   const [url, setUrl] = useState("https://google.com");
 
   const ReduxDispatch = useAppDispatch();
   let Tabs = useAppSelector((state) => state.Tabs.value);
+  useEffect(() => {
+    ipcRenderer.on("ctrl-t-pressed", (event) => {
+      console.log("ctrl-t");
+      ReduxDispatch(
+        addTab({
+          id: uuidv4(),
+          url: null,
+          currentURL: null,
+          title: "New Tab",
+          isActive: false,
+          status: "Loaded",
+        })
+      );
+    });
+    return () => {
+      ipcRenderer.removeAllListeners("ctrl-t-pressed");
+    };
+  }, []);
 
   return (
     <React.Fragment>
@@ -37,18 +61,24 @@ function Home() {
               ReduxDispatch(
                 addTab({
                   id: uuidv4(),
-                  url: "https://google.com",
-                  title: "Google",
+                  url: null,
+                  currentURL: null,
+                  title: "New Tab",
                   isActive: false,
+                  status: "Loaded",
                 })
               );
             }}
           />
         </div>
-        <div className="w-full bg-zinc-900 min-h-[calc(100vh-8rem)]">
-          {Tabs.map((tab) => (
-            <WebView key={tab.id} tab={tab} />
-          ))}
+        <div className="w-full rounded-md min-h-[calc(100vh-8rem)] overflow-hidden">
+          {Tabs.map((tab) =>
+            tab.url ? (
+              <WebView key={tab.id} tab={tab} />
+            ) : (
+              <NewTab key={tab.id} tab={tab} />
+            )
+          )}
         </div>
       </TitleBar>
     </React.Fragment>

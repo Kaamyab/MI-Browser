@@ -1,4 +1,4 @@
-import { app, ipcMain } from "electron";
+import { app, globalShortcut, ipcMain } from "electron";
 import serve from "electron-serve";
 import { createWindow } from "./helpers";
 import installExtension, {
@@ -32,6 +32,17 @@ if (isProd) {
     center: true,
     frame: false,
     transparent: true,
+    hasShadow: true,
+  });
+
+  // Register the Ctrl+T shortcut
+  globalShortcut.register("CommandOrControl+T", () => {
+    // Send an IPC event to the renderer process
+    mainWindow.webContents.send("ctrl-t-pressed");
+  });
+  // Register the Ctrl+Shift+W shortcut
+  globalShortcut.register("CommandOrControl+Shift+W", () => {
+    mainWindow.close();
   });
 
   ipcMain.on("minimizeApp", () => {
