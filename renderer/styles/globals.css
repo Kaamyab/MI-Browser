@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-image: linear-gradient(55deg, var(--tw-gradient-stops));
+}
+
+@layer base {
+  body {
+    @apply bg-transparent text-white;
+  }
+  html {
+    @apply rounded-lg overflow-hidden;
+  }
+}
