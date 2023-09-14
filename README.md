@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-MI-Browser is a modern and open-source web browser built using Next.js, Electron, TypeScript, Redux, and Framer Motion.
+MI-Browser is a modern and open-source web browser built using **Next.js**, **Electron**, **TypeScript**, **Redux**, and **Framer Motion**.
 
 ## Technologies
 
