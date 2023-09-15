@@ -27,7 +27,7 @@ const TitleBar = ({
   let ActiveTab = useAppSelector((state) => state.Tabs.value).find(
     (item) => item.isActive === true
   );
-  let currentURL: string | "" = ActiveTab.currentURL || "";
+  let currentURL: string | "" = ActiveTab?.currentURL || "";
   const [inputUrl, setInputUrl] = useState<string>(currentURL);
 
   useEffect(() => {
@@ -156,16 +156,21 @@ const TitleBar = ({
     reload: true,
   });
 
+  const backForwardButtons = () => {
+    console.log("dom-ready");
+    if (webViewRef?.current?.canGoForward().valueOf()) {
+      setOperations((prev) => ({ ...prev, forward: true }));
+    }
+    if (webViewRef?.current?.canGoBack().valueOf()) {
+      setOperations((prev) => ({ ...prev, back: true }));
+    }
+  };
+
   useEffect(() => {
-    webViewRef?.current?.addEventListener("dom-ready", () => {
-      console.log("dom-ready");
-      if (webViewRef?.current?.canGoForward().valueOf()) {
-        setOperations((prev) => ({ ...prev, forward: true }));
-      }
-      if (webViewRef?.current?.canGoBack().valueOf()) {
-        setOperations((prev) => ({ ...prev, back: true }));
-      }
-    });
+    webViewRef?.current?.addEventListener("dom-ready", backForwardButtons);
+    return () => {
+      webViewRef?.current?.removeEventListener("dom-ready", backForwardButtons);
+    };
   }, [webViewRef.current]);
 
   return (
