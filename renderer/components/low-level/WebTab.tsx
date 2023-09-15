@@ -29,7 +29,13 @@ import {
 import CtxMenuItem from "./CtxMenuItem";
 import { ArrowLeft2 } from "iconsax-react";
 
-const WebTab = ({ details }: { details: ValueType }) => {
+const WebTab = ({
+  details,
+  webViewRef,
+}: {
+  details: ValueType;
+  webViewRef: React.RefObject<Electron.WebviewTag>;
+}) => {
   let state = useAppSelector((state) => state.Tabs.value).find(
     (item) => item.id == details.id
   );
@@ -62,6 +68,11 @@ const WebTab = ({ details }: { details: ValueType }) => {
       x: e.offsetX,
       y: e.offsetY,
     });
+  };
+  const goBack = () => {
+    if (webViewRef?.current?.canGoBack().valueOf()) {
+      webViewRef?.current?.goBack();
+    }
   };
   useEffect(() => {
     tab.current.addEventListener("contextmenu", onCTXMenu);

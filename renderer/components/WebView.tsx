@@ -1,5 +1,11 @@
 // Modules
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { motion } from "framer-motion";
 
 // Components
@@ -13,10 +19,15 @@ import { ArrowLeft2, Code } from "iconsax-react";
 import { ValueType, modifyTab, setFavicons } from "../redux/features/Tabs";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 
-const WebView = ({ tab }: { tab: ValueType }) => {
+const WebView = ({
+  tab,
+  webView,
+}: {
+  tab: ValueType;
+  webView: React.RefObject<Electron.WebviewTag>;
+}) => {
   const ReduxDispatch = useAppDispatch();
   const url = "https://google.com";
-  const webView = useRef<Electron.WebviewTag>(null);
 
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
 

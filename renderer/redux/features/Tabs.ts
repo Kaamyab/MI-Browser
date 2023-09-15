@@ -123,7 +123,9 @@ export const Tabs = createSlice({
           x: action.payload.TabCTXMenu.x,
           y: action.payload.TabCTXMenu.y,
         };
-      else tab.TabCTXMenu = null;
+      else {
+        tab?.TabCTXMenu && (tab.TabCTXMenu = null);
+      }
     },
     setFavicons: (
       state,

@@ -9,16 +9,48 @@ import { ArrowLeft, ArrowRight, Lock, Refresh } from "iconsax-react";
 
 // Redux
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { ArrowClockwise, CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { modifyTab } from "../../redux/features/Tabs";
 
-const TitleBar = ({ url, setUrl, children }) => {
-  let state = useAppSelector((state) => state.Tabs.value);
-  let currentURL: string | "" =
-    state.find((item) => item.isActive === true)?.currentURL || "";
+const TitleBar = ({
+  url,
+  setUrl,
+  webViewRef,
+  children,
+}: {
+  url: string;
+  setUrl: React.Dispatch<React.SetStateAction<string>>;
+  webViewRef: React.RefObject<Electron.WebviewTag>;
+  children: React.ReactNode;
+}) => {
+  const ReduxDispatch = useAppDispatch();
+  let ActiveTab = useAppSelector((state) => state.Tabs.value).find(
+    (item) => item.isActive === true
+  );
+  let currentURL: string | "" = ActiveTab.currentURL || "";
   const [inputUrl, setInputUrl] = useState<string>(currentURL);
 
   useEffect(() => {
     setInputUrl(currentURL || "");
   }, [currentURL]);
+
+  const goBack = () => {
+    if (webViewRef?.current?.canGoBack().valueOf()) {
+      webViewRef?.current?.goBack();
+    }
+  };
+
+  const goForward = () => {
+    if (webViewRef?.current?.canGoForward().valueOf()) {
+      webViewRef?.current?.goForward();
+    }
+  };
+
+  const onReload = () => {
+    if (webViewRef?.current) {
+      webViewRef?.current?.reload();
+    }
+  };
 
   const TitlebarIcon = [
     {
@@ -77,12 +109,64 @@ const TitleBar = ({ url, setUrl, children }) => {
   ];
 
   const onUrlHandle = (e) => {
-    console.log("Event Key => ", e);
     console.log("Input Url => ", inputUrl);
-    if (!url.startsWith("http://") || !url.startsWith("https://")) {
-      setUrl("https://" + inputUrl);
-    } else setUrl(inputUrl);
+    const isValidDomain =
+      /^(\w+:\/\/)?(?:(?![\-_])[\w\-]+\.)*(?![\-_])[\w\-]+\.[A-Za-z]{2,}(\/)?$/.test(
+        inputUrl
+      );
+    const includesProtocol =
+      /^(\w+:\/\/)(?:(?![\-_])[\w\-]+\.)*(?![\-_])[\w\-]+\.[A-Za-z]{2,}(\/)?$/.test(
+        inputUrl
+      );
+    if (isValidDomain) {
+      if (includesProtocol) {
+        ReduxDispatch(
+          modifyTab({
+            id: ActiveTab.id,
+            url: inputUrl,
+          })
+        );
+      } else {
+        ReduxDispatch(
+          modifyTab({
+            id: ActiveTab.id,
+            url: "https://" + inputUrl,
+          })
+        );
+      }
+    } else {
+      ReduxDispatch(
+        modifyTab({
+          id: ActiveTab.id,
+          url: `https://www.google.com/search?q=${encodeURIComponent(
+            inputUrl
+          )}`,
+        })
+      );
+    }
   };
+
+  const [operations, setOperations] = useState<{
+    back: boolean;
+    forward: boolean;
+    reload: boolean;
+  }>({
+    back: false,
+    forward: false,
+    reload: true,
+  });
+
+  useEffect(() => {
+    webViewRef?.current?.addEventListener("dom-ready", () => {
+      console.log("dom-ready");
+      if (webViewRef?.current?.canGoForward().valueOf()) {
+        setOperations((prev) => ({ ...prev, forward: true }));
+      }
+      if (webViewRef?.current?.canGoBack().valueOf()) {
+        setOperations((prev) => ({ ...prev, back: true }));
+      }
+    });
+  }, [webViewRef.current]);
 
   return (
     <div
@@ -118,11 +202,11 @@ const TitleBar = ({ url, setUrl, children }) => {
           <Lock size="1rem" variant="Bold" className="text-white/50 shrink-0" />
           <input
             type="text"
-            defaultValue={currentURL || ""}
+            defaultValue={inputUrl || ""}
             onChange={(e) => {
               setInputUrl(e.target.value);
             }}
-            value={currentURL || ""}
+            value={inputUrl || ""}
             onKeyDown={(e) => e.key === "Enter" && onUrlHandle(e)}
             autoCorrect=""
             placeholder="Search Google or type a URL"
@@ -141,10 +225,28 @@ const TitleBar = ({ url, setUrl, children }) => {
           }}
           className="pl-4 flex gap-8 items-center shrink-0"
         >
-          <div className="flex gap-4 items-center text-zinc-200">
-            <Refresh size="1.5rem" variant="Bulk" />
-            <ArrowRight size="1.5rem" variant="Bulk" />
-            <ArrowLeft size="1.5rem" variant="Bulk" />
+          <div className="flex gap-4 items-center">
+            <ArrowClockwise
+              size={"1.25rem"}
+              onClick={onReload}
+              className={`${
+                operations.reload ? "!text-zinc-300" : "text-zinc-700"
+              }`}
+            />
+            <CaretRight
+              size={"1.25rem"}
+              onClick={goForward}
+              className={`${
+                operations.forward ? "!text-zinc-300" : "text-zinc-700"
+              }`}
+            />
+            <CaretLeft
+              size={"1.25rem"}
+              onClick={goBack}
+              className={`${
+                operations.back ? "!text-zinc-300" : "text-zinc-700"
+              }`}
+            />
           </div>
           {/* <PictureFrame size="1.5rem" /> */}
         </div>

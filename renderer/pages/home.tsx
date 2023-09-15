@@ -1,5 +1,5 @@
 // Modules
-import React, { FormEvent, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
 import electron from "electron";
@@ -20,6 +20,7 @@ import NewTab from "../components/low-level/NewTab";
 const ipcRenderer = electron.ipcRenderer;
 
 function Home() {
+  const webView = useRef<Electron.WebviewTag>(null);
   const [url, setUrl] = useState("https://google.com");
 
   const ReduxDispatch = useAppDispatch();
@@ -35,6 +36,7 @@ function Home() {
           title: "New Tab",
           isActive: false,
           status: "Loaded",
+          favicons: null,
         })
       );
     });
@@ -45,7 +47,7 @@ function Home() {
 
   return (
     <React.Fragment>
-      <TitleBar url={url} setUrl={setUrl}>
+      <TitleBar url={url} setUrl={setUrl} webViewRef={webView}>
         {/* <div className="bg-green-500 w-auto h-auto min-h-[calc(100vh-3.5rem)] rounded-lg"></div> */}
         <div
           dir="ltr"
@@ -53,7 +55,7 @@ function Home() {
         >
           <AnimatePresence>
             {Tabs.map((tab) => (
-              <WebTab key={tab.id} details={tab} />
+              <WebTab key={tab.id} details={tab} webViewRef={webView} />
             ))}
           </AnimatePresence>
           <AddTabButton
@@ -66,6 +68,7 @@ function Home() {
                   title: "New Tab",
                   isActive: false,
                   status: "Loaded",
+                  favicons: null,
                 })
               );
             }}
@@ -74,7 +77,7 @@ function Home() {
         <div className="w-full rounded-md min-h-[calc(100vh-8rem)] overflow-hidden">
           {Tabs.map((tab) =>
             tab.url ? (
-              <WebView key={tab.id} tab={tab} />
+              <WebView key={tab.id} tab={tab} webView={webView} />
             ) : (
               <NewTab key={tab.id} tab={tab} />
             )
