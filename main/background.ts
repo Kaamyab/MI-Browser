@@ -38,8 +38,16 @@ if (isProd) {
     center: true,
     frame: false,
     transparent: true,
+    fullscreen: true,
     hasShadow: true,
     icon: icon,
+    show: false,
+  });
+
+  mainWindow.on("ready-to-show", () => {
+    mainWindow.show();
+    mainWindow.focus();
+    mainWindow.maximize();
   });
 
   // Register the Ctrl+T shortcut

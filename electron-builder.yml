@@ -1,6 +1,32 @@
 appId: com.browser.mi
 productName: MI Browser
 copyright: Copyright © 2018 Kaamy
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - ia32
+    - target: nsis
+      arch:
+        - x64
+    - target: nsis
+      arch:
+        - ia32
+    - target: portable
+    - target: msi
+  artifactName: ${productName} Installer (${arch}).${ext}
+
+linux:
+  target:
+    - target: AppImage
+    - target: flatpak
+    - target: snap
+    - target: deb
+    - target: rpm
+    - target: freebsd
+  artifactName: ${productName} ${target}.${ext}
+
 directories:
   output: dist
   buildResources: resources
