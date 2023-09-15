@@ -8,6 +8,11 @@ export type ValueType = {
   title: string;
   isActive: boolean;
   status?: "Loading" | "Loaded" | "Failed" | null;
+  TabCTXMenu?: {
+    x: number;
+    y: number;
+  } | null;
+  favicons: string | string[] | null;
 };
 
 const initialState = {
@@ -19,6 +24,7 @@ const initialState = {
       title: "New Tab",
       isActive: true,
       status: null,
+      TabCTXMenu: null,
     },
   ],
 } as { value: ValueType[] };
@@ -103,6 +109,34 @@ export const Tabs = createSlice({
         }
       }
     },
+    setCTXMenu: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        TabCTXMenu: { x: number; y: number } | null;
+      }>
+    ) => {
+      const tab = state.value.find((item) => item.id == action.payload.id);
+      tab && state.value.forEach((item) => (item.TabCTXMenu = null));
+      if (tab && action.payload.TabCTXMenu !== null)
+        tab.TabCTXMenu = {
+          x: action.payload.TabCTXMenu.x,
+          y: action.payload.TabCTXMenu.y,
+        };
+      else tab.TabCTXMenu = null;
+    },
+    setFavicons: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        favicons: string | string[] | null;
+      }>
+    ) => {
+      const tab = state.value.find((item) => item.id == action.payload.id);
+      if (typeof action.payload.favicons === "string") {
+        tab.favicons = action.payload.favicons;
+      }
+    },
   },
 });
 
@@ -115,5 +149,7 @@ export const {
   closeAllTabs,
   closeOtherTabs,
   modifyTab,
+  setCTXMenu,
+  setFavicons,
 } = Tabs.actions;
 export default Tabs.reducer;

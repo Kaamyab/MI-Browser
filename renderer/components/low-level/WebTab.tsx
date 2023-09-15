@@ -23,26 +23,39 @@ import {
   closeRightTabs,
   removeTab,
   setActiveTab,
+  setCTXMenu,
   ValueType,
 } from "../../redux/features/Tabs";
 import CtxMenuItem from "./CtxMenuItem";
 import { ArrowLeft2 } from "iconsax-react";
 
 const WebTab = ({ details }: { details: ValueType }) => {
-  let state = useAppSelector((state) => state.Tabs.value);
+  let state = useAppSelector((state) => state.Tabs.value).find(
+    (item) => item.id == details.id
+  );
   let status =
     useAppSelector((state) => state.Tabs.value).find(
       (item) => item.id == details.id
     )?.status || undefined;
+  let ctxMenu = useAppSelector((state) => state.Tabs.value).find(
+    (item) => item.id == details.id
+  )?.TabCTXMenu;
+  const setCtxMenu = (ctx) =>
+    ReduxDispatch(
+      setCTXMenu({
+        id: details.id,
+        TabCTXMenu: ctx,
+      })
+    );
   useEffect(() => {
     console.log("Tab => ", status);
   }, [state]);
   const ReduxDispatch = useAppDispatch();
   const tab = useRef<HTMLDivElement>(null);
-  const [ctxMenu, setCtxMenu] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+  // const [ctxMenu, setCtxMenu] = useState<{
+  //   x: number;
+  //   y: number;
+  // } | null>(null);
   const onCTXMenu = (e: MouseEvent) => {
     console.log("rc");
     setCtxMenu({
@@ -176,6 +189,18 @@ const WebTab = ({ details }: { details: ValueType }) => {
           <CircleNotch size={"1.25rem"} className="animate-spin" />
         ) : status == "Failed" ? (
           <Warning size={"1.25rem"} />
+        ) : state?.favicons ? (
+          <img
+            src={
+              typeof state?.favicons == "string"
+                ? state?.favicons
+                : typeof state?.favicons == "object"
+                ? state?.favicons[0]
+                : ""
+            }
+            alt=""
+            className="w-4 h-4"
+          />
         ) : (
           <Airplay size={"1.25rem"} />
         )}

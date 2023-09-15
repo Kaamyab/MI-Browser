@@ -10,7 +10,7 @@ import { ArrowCounterClockwise } from "@phosphor-icons/react";
 import { ArrowLeft2, Code } from "iconsax-react";
 
 // Redux
-import { ValueType, modifyTab } from "../redux/features/Tabs";
+import { ValueType, modifyTab, setFavicons } from "../redux/features/Tabs";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 
 const WebView = ({ tab }: { tab: ValueType }) => {
@@ -88,12 +88,22 @@ const WebView = ({ tab }: { tab: ValueType }) => {
     onURLChange(webView?.current?.src);
   }, [webView?.current?.src]);
 
+  const onFaviconUpdate = (e: Electron.PageFaviconUpdatedEvent) => {
+    ReduxDispatch(
+      setFavicons({
+        id: tab.id,
+        favicons: e.favicons[0] || null,
+      })
+    );
+  };
+
   useEffect(() => {
     webView?.current?.addEventListener("did-finish-load", onFinishLoad);
     webView?.current?.addEventListener("context-menu", onContextMenu);
     webView?.current.addEventListener("did-start-loading", onStartLoading);
     webView?.current.addEventListener("did-stop-loading", onStopLoading);
     webView?.current?.addEventListener("page-title-updated", onTitleUpdate);
+    webView?.current?.addEventListener("page-favicon-updated", onFaviconUpdate);
     return () => {
       webView?.current?.removeEventListener("context-menu", onContextMenu);
       webView?.current?.removeEventListener(
@@ -104,6 +114,10 @@ const WebView = ({ tab }: { tab: ValueType }) => {
       webView?.current?.removeEventListener(
         "page-title-updated",
         onTitleUpdate
+      );
+      webView?.current?.removeEventListener(
+        "page-favicon-updated",
+        onFaviconUpdate
       );
     };
   }, []);
